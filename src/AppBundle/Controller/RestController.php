@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 
+use AppBundle\Entity\Group;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,7 +15,12 @@ class RestController
      * @Method({"POST"})
      */
     public function actionAddGroup(){
-        return new JsonResponse(['todo']);
+        $group = new Group();
+
+        $ret = [
+            'groupKey' => $group->getKey()
+        ];
+        return new JsonResponse($ret);
     }
 
     /**
