@@ -6,26 +6,35 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity
- * @ORM\Table(name="group")
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\GroupRepository")
+ * @ORM\Table(name="sp_group")
  */
 class Group
 {
 
+    /**
+     * Group constructor.
+     */
     public function __construct()
     {
-        $this->key = $this->generateKey();
         $this->users = new ArrayCollection();
     }
 
     /**
      * @ORM\Id
-     * @ORM\GeneratedValue(strategy="NONE")
-     * @ORM\Column(type="string")
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
      *
-     * @var string
+     * @var integer
      */
-    private $key;
+    private $id;
+
+    /**
+     * @var integer
+     *
+     * @ORM\Column(name="group_key", unique=true)
+     */
+    private $groupKey;
 
     /**
      * @var string
@@ -37,7 +46,7 @@ class Group
     /**
      * @var User[]
      *
-     * @ORM\OneToMany(targetEntity="AppBundle\Entity\User", mappedBy="group")
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\User", mappedBy="group", cascade="persist")
      */
     private $users;
 
@@ -74,24 +83,25 @@ class Group
     }
 
     /**
-     * @return string
+     * @return integer
      */
-    public function getKey()
+    public function getId()
     {
-        return $this->key;
+        return $this->id;
     }
 
     /**
-     * @return integer
+     * @param integer $groupKey
      */
-    private function generateKey(){
-        $result = '';
+    public function setGroupKey($groupKey){
+        $this->groupKey = $groupKey;
+    }
 
-        for($i = 0; $i < 8; $i++) {
-            $result .= mt_rand(0, 9);
-        }
-
-        return (int)$result;
+    /**
+     * @return int
+     */
+    public function getGroupKey(){
+        return $this->groupKey;
     }
 
 }

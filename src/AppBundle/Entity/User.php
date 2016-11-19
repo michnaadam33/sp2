@@ -7,10 +7,19 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="user")
+ * @ORM\Table(name="sp_user")
  */
 class User
 {
+
+    /**
+     * User constructor.
+     * @param string $login
+     */
+    public function __construct($login)
+    {
+        $this->login = $login;
+    }
 
     /**
      * @ORM\Column(type="integer")
@@ -29,8 +38,7 @@ class User
     /**
      * @var Group
      *
-     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Group")
-     * @ORM\JoinColumn(referencedColumnName="key")
+     * @ORM\ManyToOne(targetEntity="AppBundle\Entity\Group", inversedBy="users", cascade="persist")
      */
     private $group;
 
