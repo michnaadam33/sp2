@@ -16,7 +16,7 @@ class Record
      */
     public function __construct()
     {
-        $this->users = new ArrayCollection();
+        $this->userRecords = new ArrayCollection();
         $this->created = new \DateTime();
         $this->updated = new \DateTime();
     }
@@ -101,6 +101,13 @@ class Record
      * @ORM\ManyToOne(targetEntity="Group")
      */
     private $group;
+
+    /**
+     * @var UserRecord []
+     *
+     * @ORM\OneToMany(targetEntity="UserRecord", mappedBy="record", cascade={"persist"})
+     */
+    private $userRecords;
 
     /**
      * @return integer
@@ -227,6 +234,20 @@ class Record
     public function setGroup($group)
     {
         $this->group = $group;
+    }
+
+    /**
+     * @return UserRecord[]|ArrayCollection
+     */
+    public function getUserRecords(){
+        return $this->userRecords;
+    }
+
+    /**
+     * @param UserRecord $userRecord
+     */
+    public function addUserRecords(UserRecord $userRecord){
+        $this->userRecords->add($userRecord);
     }
 
 

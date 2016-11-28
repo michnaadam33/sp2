@@ -6,7 +6,9 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Group;
 use AppBundle\Entity\Record;
 use AppBundle\Entity\User;
+use AppBundle\Entity\UserRecord;
 use AppBundle\Repository\GroupRepository;
+use AppBundle\Repository\UserRepository;
 use AppBundle\Utils\KeyGenerator;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -85,23 +87,40 @@ class RestController extends Controller
         $em = $this->getDoctrine()->getManager();
         /** @var GroupRepository $groupRepository */
         $groupRepository = $em->getRepository("AppBundle:Group");
+        /** @var UserRepository $userRepository */
+        $userRepository = $em->getRepository("AppBundle:User");
         $group = $groupRepository->findByGroupKey($groupKey);
 
         $content = json_decode($request->getContent());
         $record = Record::createRecordFromContent($content, $group);
+        foreach ($content->users as $user){
+            $userObj = $userRepository->findOneByIdAndGroup($user->id, $group->getId());
+            $userRecord = UserRecord::createFromContent($user);
+            $userRecord->setUser($userObj);
+            $userRecord->setRecord($record);
+            $record->addUserRecords($userRecord);
+            $em->persist($userRecord);
+        }
 
         $em->persist($record);
         $em->flush();
 
-
         $recordUsers = [];
+        foreach ($record->getUserRecords() as $userRecord){
+            $recordUsers[] = [
+                'id' => $userRecord->getUser()->getId(),
+                'value' => $userRecord->getValue(),
+                'currency' => $userRecord->getCurrency(),
+                'participation' => $userRecord->getParticipation()
+            ];
+        }
 
         $ret = [
-            'id'=> 'TODO',
-            'name' => 'todo',
+            'id'=> $record->getId(),
+            'name' => $record->getName(),
             'coordinates' => [
-                'lat' => 'todo',
-                'lon' => ''
+                'lat' => $record->getLat(),
+                'lon' => $record->getLon()
             ],
             'recordedDate' =>[
                 'timestamp'
