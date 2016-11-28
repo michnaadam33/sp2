@@ -5,12 +5,14 @@ namespace AppBundle\Controller;
 
 use AppBundle\Entity\Group;
 use AppBundle\Entity\User;
+use AppBundle\Repository\GroupRepository;
 use AppBundle\Utils\KeyGenerator;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RestController extends Controller
 {
@@ -19,7 +21,7 @@ class RestController extends Controller
      * @Method({"POST"})
      */
     public function actionAddGroup(Request $request){
-        $em = $this->getDoctrine()->getEntityManager();
+        $em = $this->getDoctrine()->getManager();
         /** @var KeyGenerator $keyGenerator */
         $keyGenerator = $this->get('app.key_generator');
         $group = new Group();
@@ -49,8 +51,23 @@ class RestController extends Controller
      * @return JsonResponse
      */
     public function actionGetGroup($groupKey){
+        $em = $this->getDoctrine()->getManager();
+        /** @var GroupRepository $groupRepository */
+        $groupRepository = $em->getRepository("AppBundle:Group");
+        $group = $groupRepository->findByGroupKey($groupKey);
+        $groupUsers = [];
+        foreach ($group->getUsers() as $user){
+            $groupUsers[] = [
+                'id' => $user->getId(),
+                'login' => $user->getLogin()
+            ];
+        }
         $ret = [
-            'groupKey' => $groupKey
+            'groupKey' => $groupKey,
+            'groupName' => $group->getName(),
+            'users' => $groupUsers,
+            'creationDate' => $group->getCreated()->getTimestamp(),
+            'updateDate' => $group->getUpdated()->getTimestamp()
         ];
         return new JsonResponse($ret);
     }

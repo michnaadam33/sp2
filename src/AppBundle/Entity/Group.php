@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass="AppBundle\Repository\GroupRepository")
@@ -18,6 +19,22 @@ class Group
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->created = new \DateTime();
+        $this->updated = new \DateTime();
+    }
+
+    /**
+     * @ORM\PrePersist
+     * @ORM\PreUpdate
+     */
+    public function updatedTimestamps()
+    {
+        $this->setUpdated(new \DateTime());
+
+        if($this->getCreated() == null)
+        {
+            $this->created = new \DateTime();
+        }
     }
 
     /**
@@ -49,6 +66,20 @@ class Group
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\User", mappedBy="group", cascade="persist")
      */
     private $users;
+
+    /**
+     * @var \DateTime $created
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $created;
+
+    /**
+     * @var \DateTime $created
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $updated;
 
     /**
      * @return string
@@ -102,6 +133,28 @@ class Group
      */
     public function getGroupKey(){
         return $this->groupKey;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreated(){
+        return $this->created;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getUpdated(){
+        return $this->updated;
+    }
+
+
+    /**
+     * @param \DateTime $updated
+     */
+    public function setUpdated($updated){
+        $this->updated = $updated;
     }
 
 }
