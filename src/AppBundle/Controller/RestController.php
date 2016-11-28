@@ -4,6 +4,7 @@ namespace AppBundle\Controller;
 
 
 use AppBundle\Entity\Group;
+use AppBundle\Entity\Record;
 use AppBundle\Entity\User;
 use AppBundle\Repository\GroupRepository;
 use AppBundle\Utils\KeyGenerator;
@@ -77,11 +78,35 @@ class RestController extends Controller
      * @Method({"POST"})
      *
      * @param $groupKey
+     * @param Request $request
      * @return JsonResponse
      */
-    public function actionAddRecord($groupKey){
-        $ret = [
+    public function actionAddRecord($groupKey, Request $request){
+        $em = $this->getDoctrine()->getManager();
+        /** @var GroupRepository $groupRepository */
+        $groupRepository = $em->getRepository("AppBundle:Group");
+        $group = $groupRepository->findByGroupKey($groupKey);
 
+        $content = json_decode($request->getContent());
+        $record = Record::createRecordFromContent($content, $group);
+
+        $em->persist($record);
+        $em->flush();
+
+
+        $recordUsers = [];
+
+        $ret = [
+            'id'=> 'TODO',
+            'name' => 'todo',
+            'coordinates' => [
+                'lat' => 'todo',
+                'lon' => ''
+            ],
+            'recordedDate' =>[
+                'timestamp'
+            ],
+            'users' => $recordUsers
         ];
         return new JsonResponse($ret);
     }
