@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass="AppBundle\Repository\RecordRepository")
@@ -12,13 +13,38 @@ use Doctrine\ORM\Mapping as ORM;
 class Record
 {
     /**
-     * Group constructor.
+     * Record constructor.
      */
     public function __construct()
     {
         $this->userRecords = new ArrayCollection();
         $this->created = new \DateTime();
         $this->updated = new \DateTime();
+    }
+
+    public function __toArray(){
+        $users = [];
+        foreach ($this->userRecords as $userRecord){
+            $users[] = [
+              'id' => $userRecord->getUser()->getId(),
+                'value' => $userRecord->getValue(),
+                'currency' => $userRecord->getCurrency(),
+                'participation' => $userRecord->getParticipation()
+            ];
+        }
+        $ret = [
+            'id' => $this->id,
+            'name' => $this->name,
+            'coordinates' => [
+                'lat' => $this->lat,
+                'lon' => $this->lon
+            ],
+            'recordedDate' => [
+                'timestamp' => $this->created->getTimestamp()
+            ],
+            'users' => $users
+        ];
+        return $ret;
     }
 
     /**
@@ -62,6 +88,20 @@ class Record
     private $id;
 
     /**
+     * @var \DateTime $created
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $created;
+
+    /**
+     * @var \DateTime $created
+     *
+     * @ORM\Column(type="datetime")
+     */
+    private $updated;
+
+    /**
      * @var string
      *
      * @ORM\Column(name="name", type="string")
@@ -70,15 +110,17 @@ class Record
 
     /**
      * @var float
+     * @see https://developers.google.com/maps/documentation/javascript/mysql-to-maps
      *
-     * @ORM\Column(name="lon", type="float")
+     * @ORM\Column(name="lon", type="decimal", precision=10, scale=6)
      */
     private $lon;
 
     /**
      * @var float
+     * @see https://developers.google.com/maps/documentation/javascript/mysql-to-maps
      *
-     * @ORM\Column(name="lat", type="float")
+     * @ORM\Column(name="lat", type="decimal", precision=10, scale=6)
      */
     private $lat;
 
@@ -98,7 +140,7 @@ class Record
 
     /**
      * @var Group
-     * @ORM\ManyToOne(targetEntity="Group")
+     * @ORM\ManyToOne(targetEntity="Group", inversedBy="records")
      */
     private $group;
 

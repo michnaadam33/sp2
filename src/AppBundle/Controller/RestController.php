@@ -185,10 +185,12 @@ class RestController extends Controller
      */
     public function actionEditRecord($groupKey)
     {
-        $ret = [
-
-        ];
-        return new JsonResponse($ret);
+        try {
+            $ret = [];
+            return $this->getResponse($ret);
+        } catch (\Exception $ex) {
+            return $this->getExceptionResponse($ex);
+        }
     }
 
     /**
@@ -200,10 +202,21 @@ class RestController extends Controller
      */
     public function actionGetRecords($groupKey)
     {
-        $ret = [
+        try {
+            $em = $this->getDoctrine()->getManager();
+            /** @var GroupRepository $groupRepository */
+            $groupRepository = $em->getRepository("AppBundle:Group");
+            $group = $groupRepository->findByGroupKey($groupKey);
+            $records = $group->getRecordsAsArray();
 
-        ];
-        return new JsonResponse($ret);
+            $ret = [
+                'groupName' => $group->getName(),
+                'records' => $records
+            ];
+            return $this->getResponse($ret);
+        } catch (\Exception $ex) {
+            return $this->getExceptionResponse($ex);
+        }
     }
 
     /**

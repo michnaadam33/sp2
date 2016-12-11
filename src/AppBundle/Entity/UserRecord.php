@@ -2,6 +2,7 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 
 /**
@@ -10,6 +11,23 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UserRecord
 {
+    const PLN = 'PLN';
+    const USD = 'USD';
+    const EUR = 'EUR';
+    const GBP = 'GBP';
+
+    /**
+     * @var array
+     * @see https://en.wikipedia.org/wiki/ISO_4217#Active_codes
+     */
+    private $validCurrency = [
+        self::EUR,
+        self::GBP,
+        self::PLN,
+        self::USD
+    ];
+
+
     /**
      * @param $content
      * @return UserRecord
@@ -87,17 +105,26 @@ class UserRecord
 
     /**
      * @return string
+     * @throws \Exception
      */
     public function getCurrency()
     {
+        if(!in_array($this->currency, $this->validCurrency)){
+            throw new \Exception('Wrong currency '.$this->currency.' !');
+        }
         return $this->currency;
     }
 
     /**
      * @param string $currency
+     * @throws \Exception
      */
     public function setCurrency($currency)
     {
+        $currency = strtoupper($currency);
+        if(!in_array($currency, $this->validCurrency)){
+            throw new \Exception('Currency '.$currency.' not found!');
+        }
         $this->currency = $currency;
     }
 
@@ -149,7 +176,5 @@ class UserRecord
     {
         $this->record = $record;
     }
-
-
 
 }

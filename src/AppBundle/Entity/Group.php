@@ -18,6 +18,7 @@ class Group
     public function __construct()
     {
         $this->users = new ArrayCollection();
+        $this->records = new ArrayCollection();
         $this->created = new \DateTime();
         $this->updated = new \DateTime();
     }
@@ -67,6 +68,13 @@ class Group
     private $users;
 
     /**
+     * @var Record[]
+     *
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Record", mappedBy="group", cascade="persist")
+     */
+    private $records;
+
+    /**
      * @var \DateTime $created
      *
      * @ORM\Column(type="datetime")
@@ -110,6 +118,18 @@ class Group
     public function addUser(User $user)
     {
         $this->users->add($user);
+    }
+
+    public function getRecordsAsArray(){
+        $ret = [];
+        foreach ($this->records as $record){
+            $ret[] = $record-> __toArray();
+        }
+        return $ret;
+    }
+
+    public function addRecord(Record $record){
+        $this->records->add($record);
     }
 
     /**
