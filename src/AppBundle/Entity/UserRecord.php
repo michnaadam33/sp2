@@ -33,7 +33,7 @@ class UserRecord
 
     /**
      * @var float
-     * @ORM\Column(name="value", type="float")
+     * @ORM\Column(name="value", type="decimal", scale=2)
      */
     private $value;
 
@@ -47,7 +47,7 @@ class UserRecord
     /**
      * @var float
      *
-     * @ORM\Column(name="participation", type="float")
+     * @ORM\Column(name="participation", type="decimal", scale=2)
      */
     private $participation;
 
@@ -59,7 +59,7 @@ class UserRecord
 
     /**
      * @var Record
-     * @ORM\ManyToOne(targetEntity="Record", inversedBy="userRecords", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity="Record", inversedBy="userRecords", cascade={"all"})
      */
     private $record;
 

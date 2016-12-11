@@ -15,7 +15,7 @@ class GroupRepository extends EntityRepository
     public function findByGroupKey($groupKey){
         $group = $this->findOneBy(['groupKey' => $groupKey]);
         if(empty($group)){
-            throw new NotFoundHttpException("Group on id: ".$groupKey." not found!");
+            throw new NotFoundHttpException("Group on key: ".$groupKey." not found!");
         }
         return $group;
     }

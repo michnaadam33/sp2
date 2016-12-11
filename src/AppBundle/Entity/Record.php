@@ -105,7 +105,7 @@ class Record
     /**
      * @var UserRecord []
      *
-     * @ORM\OneToMany(targetEntity="UserRecord", mappedBy="record", cascade={"persist"})
+     * @ORM\OneToMany(targetEntity="UserRecord", mappedBy="record", cascade={"all"})
      */
     private $userRecords;
 
