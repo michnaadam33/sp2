@@ -20,6 +20,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RestController extends Controller
 {
+    const ASC_SORT = 'ASC';
+    const DESC_SORT = 'DESC';
+
+    private $valideteSort = [
+        self::ASC_SORT,
+        self::DESC_SORT
+    ];
     /**
      * @Route("/group", name="add_group")
      * @Method({"POST"})
@@ -200,15 +207,21 @@ class RestController extends Controller
      * @param $groupKey
      * @return JsonResponse
      */
-    public function actionGetRecords($groupKey)
+    public function actionGetRecords($groupKey, Request $request)
     {
         try {
+            $sort = strtoupper($request->get('sort', 'ASC'));
+            if(!in_array($sort, $this->valideteSort)){
+                throw new \Exception("Wrong sort attribute '".$sort."'!");
+            }
+
             $em = $this->getDoctrine()->getManager();
             /** @var GroupRepository $groupRepository */
             $groupRepository = $em->getRepository("AppBundle:Group");
+            /** @var RecordRepository $recordRepository */
+            $recordRepository = $em->getRepository("AppBundle:Record");
             $group = $groupRepository->findByGroupKey($groupKey);
-            $records = $group->getRecordsAsArray();
-
+            $records = $recordRepository->findByGroupId($group->getId(), $sort);
             $ret = [
                 'groupName' => $group->getName(),
                 'records' => $records
@@ -220,7 +233,7 @@ class RestController extends Controller
     }
 
     /**
-     * @Route("/group/{groupKey}/summary", name="edit_summary")
+     * @Route("/group/{groupKey}/summary", name="get_summary")
      * @Method({"GET"})
      *
      * @param $groupKey
