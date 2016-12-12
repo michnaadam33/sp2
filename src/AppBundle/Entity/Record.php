@@ -9,6 +9,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass="AppBundle\Repository\RecordRepository")
  * @ORM\Table(name="sp_record")
+ * @ORM\HasLifecycleCallbacks
  */
 class Record
 {

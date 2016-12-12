@@ -187,14 +187,45 @@ class RestController extends Controller
      * @Route("/group/{groupKey}/record", name="edit_record")
      * @Method({"PUT"})
      *
-     * @param $groupKey
+     * @param string $groupKey
+     * @param  Request $request
      * @return JsonResponse
      */
-    public function actionEditRecord($groupKey)
+    public function actionEditRecord($groupKey, Request $request)
     {
         try {
-            $ret = [];
-            return $this->getResponse($ret);
+            $content = json_decode($request->getContent());
+
+
+            $em = $this->getDoctrine()->getManager();
+            /** @var GroupRepository $groupRepository */
+            $groupRepository = $em->getRepository("AppBundle:Group");
+            /** @var UserRepository $userRepository */
+            $userRepository = $em->getRepository("AppBundle:User");
+            /** @var RecordRepository $recordRepository */
+            $recordRepository = $em->getRepository("AppBundle:Record");
+
+            $group = $groupRepository->findByGroupKey($groupKey);
+
+            $record = $recordRepository->findOneByIdAndGroup($content->id, $group->getId());
+            if($record->getUpdated()->getTimestamp() > $content->recordedDate->timestamp){
+                throw new \Exception("Already updated!");
+            }
+            $record->setName($content->name);
+            $record->setContentImage($content->contentImage);
+            $record->setContentType($content->contentType);
+            $record->setLat($content->coordinates->lat);
+            $record->setLon($content->coordinates->lon);
+            foreach ($content->users as $user) {
+                $userObj = $userRepository->findOneByIdAndGroup($user->id, $group->getId());
+                $userRecord = UserRecord::createFromContent($user);
+                $userRecord->setUser($userObj);
+                $userRecord->setRecord($record);
+                $record->addUserRecords($userRecord);
+                $em->persist($userRecord);
+            }
+            $em->flush();
+            return $this->getResponse($record->__toArray());
         } catch (\Exception $ex) {
             return $this->getExceptionResponse($ex);
         }
