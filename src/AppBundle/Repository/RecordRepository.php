@@ -30,12 +30,25 @@ class RecordRepository extends EntityRepository
      * @param string $order
      * @return array
      */
-    public function findByGroupId($groupId, $order = 'ASC'){
+    public function findByGroupIdAsArray($groupId, $order = 'ASC'){
         $qb = $this->createQueryBuilder('r');
         $qb->where('r.group = :group');
         $qb->orderBy('r.created', $order);
         $qb->setParameter('group', $groupId);
         return $qb->getQuery()->getArrayResult();
+    }
+
+    /**
+     * @param int $groupId
+     * @param string $order
+     * @return array
+     */
+    public function findByGroupId($groupId, $order = 'ASC'){
+        $qb = $this->createQueryBuilder('r');
+        $qb->where('r.group = :group');
+        $qb->orderBy('r.created', $order);
+        $qb->setParameter('group', $groupId);
+        return $qb->getQuery()->getResult();
     }
 
 }

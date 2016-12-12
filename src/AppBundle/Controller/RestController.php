@@ -7,6 +7,7 @@ use AppBundle\Entity\Group;
 use AppBundle\Entity\Record;
 use AppBundle\Entity\User;
 use AppBundle\Entity\UserRecord;
+use AppBundle\Factory\SummaryFactory;
 use AppBundle\Repository\GroupRepository;
 use AppBundle\Repository\RecordRepository;
 use AppBundle\Repository\UserRepository;
@@ -252,7 +253,7 @@ class RestController extends Controller
             /** @var RecordRepository $recordRepository */
             $recordRepository = $em->getRepository("AppBundle:Record");
             $group = $groupRepository->findByGroupKey($groupKey);
-            $records = $recordRepository->findByGroupId($group->getId(), $sort);
+            $records = $recordRepository->findByGroupIdAsArray($group->getId(), $sort);
             $ret = [
                 'groupName' => $group->getName(),
                 'records' => $records
@@ -272,10 +273,23 @@ class RestController extends Controller
      */
     public function actionGetSummary($groupKey)
     {
-        $ret = [
-
-        ];
-        return new JsonResponse($ret);
+        try{
+            $em = $this->getDoctrine()->getManager();
+            /** @var GroupRepository $groupRepository */
+            $groupRepository = $em->getRepository("AppBundle:Group");
+            $group = $groupRepository->findByGroupKey($groupKey);
+            /** @var SummaryFactory $summaryFactory */
+            $summaryFactory = $this->get('app.factory.summary');
+            $summary = $summaryFactory->createSummary($group);
+            $ret = [
+                'groupId' => $group->getId(),
+                'summaryCost' => $summary->getCost(),
+                'users' => $summary->getUsersSummary()
+            ];
+            return $this->getResponse($ret);
+        } catch (\Exception $ex) {
+            return $this->getExceptionResponse($ex);
+        }
     }
 
     /**

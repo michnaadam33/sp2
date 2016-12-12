@@ -14,3 +14,15 @@ services:
         factory: ["@doctrine", getRepository]
         arguments:
             - "AppBundle:Group"
+
+    app.repository.record:
+        class: AppBundle\Repository\RecordRepository
+        factory: ["@doctrine", getRepository]
+        arguments:
+            - "AppBundle:Record"
+
+    app.factory.summary:
+        class: AppBundle\Factory\SummaryFactory
+        arguments:
+            - "@app.repository.record"
+
