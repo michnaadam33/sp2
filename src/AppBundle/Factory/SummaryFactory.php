@@ -26,12 +26,12 @@ class SummaryFactory
      */
     public function createSummary(Group $group){
         $cost = 0;
-        $costUser = [];
-        $userSummary = [];
+        $parts = 0;
+        $costUsers = [];
         $records = $this->recordRepository->findByGroupId($group->getId());
 
         foreach ($group->getUsers() as $user){
-            $costUser[$user->getId()] = [
+            $costUsers[$user->getId()] = [
                 'spend' => 0,
                 'participation' => 0
             ];
@@ -41,14 +41,36 @@ class SummaryFactory
             /** @var UserRecord $userRecord */
             foreach ($record->getUserRecords() as $userRecord){
                 $cost += $userRecord->getValue();
-                $costUser[$userRecord->getUser()->getId()]['spend'] += $userRecord->getValue();
-                $costUser[$userRecord->getUser()->getId()]['participation'] += $userRecord->getParticipation();
+                $parts += $userRecord->getParticipation();
+                $costUsers[$userRecord->getUser()->getId()]['spend'] += $userRecord->getValue();
+                $costUsers[$userRecord->getUser()->getId()]['participation'] += $userRecord->getParticipation();
             }
         }
+        $userSummary = [];
+        foreach ($costUsers as $key => $costUser ){
+            $realToPay = $this->getRealCostUser($costUser['participation'],$parts,$cost);
+            $toPay = ($realToPay > $costUser['spend']) ? round($realToPay - $costUser['spend'], 2) : 0;
+            $overpayment = ($costUser['spend'] > $realToPay) ? round( $costUser['spend'] - $realToPay,2) : 0;
 
-        //todo
-        $userSummary = $costUser;
+            $userSummary[$key] = [
+                'toPay' => $toPay,
+                'overpayment' => $overpayment
+            ];
+        }
         return new Summary($cost, $userSummary);
+    }
+
+    /**
+     * @param int $userPart
+     * @param int $parts
+     * @param int $cost
+     * @return float|int
+     */
+    private function getRealCostUser($userPart, $parts, $cost){
+        if($parts == 0){
+            return 0;
+        }
+        return ($userPart/$parts)*$cost;
     }
 
 }
